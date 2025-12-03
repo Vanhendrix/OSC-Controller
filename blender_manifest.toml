@@ -1,0 +1,16 @@
+schema_version = "1.0.0"
+
+id = "osc_controller"
+version = "1.0.0"
+name = "OSC Controller for Blender"
+tagline = "Control Blender properties over OSC"
+maintainer = "Guillaume Hervy"
+type = "add-on"
+
+website = ""
+
+tags = ["3D View", "Animation", "Node", "Rigging", "OSC"]
+
+blender_version_min = "4.0.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
