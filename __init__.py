@@ -16,8 +16,8 @@ bl_info = {
     "location": "View3D > N-Panel > OSC",
     "description": "Advanced control of Blender properties via OSC (shape keys, bones, generic properties).",
     "warning": "",
-    "doc_url": "",
-    "tracker_url": "",
+    "doc_url": "https://github.com/Vanhendrix/OSC-Controller",
+    "tracker_url": "https://github.com/Vanhendrix/OSC-Controller/issues",
     "category": "Animation",
 }
 

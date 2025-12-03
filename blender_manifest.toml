@@ -7,7 +7,7 @@ tagline = "Control Blender properties over OSC"
 maintainer = "Guillaume Hervy"
 type = "add-on"
 
-website = ""
+website = "https://github.com/Vanhendrix/OSC-Controller"
 
 tags = ["3D View", "Animation", "Node", "Rigging", "OSC"]
 
