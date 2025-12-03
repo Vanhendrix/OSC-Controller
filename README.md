@@ -13,7 +13,7 @@ Drive shape keys, bones and arbitrary properties in real time from tools like To
 - Bundled `python-osc` library (no separate installation required).
 
 ## Requirements
-- Blender 4 or newer
+- Blender **4** or newer
 - OS: anything supported by Blender and Python.
 
 ## Installation
@@ -28,27 +28,27 @@ The add-on bundles `python-osc` under `vendors/pythonosc`, so no extra pip insta
 
 ## Quick Start
 1. Install and enable the add-on as described above.
-2. Open the 3D View -> N-panel -> "OSC" tab.
+2. Open the **3D View** -> N-panel -> **OSC** tab.
 3. In the "OSC Control" section:
     - Set `IP` (usually `0.0.0.0` to listen on all interfaces).
     - Set `Port` (default `9000`, must match yout OSC sender).
     - Optionally enable `Auto Key` if you want incoming OSC data to insert keyframes.
-4. Click Start to launch the OSC server.
+4. Click **Start** to launch the OSC server.
 5. From your OSC tool (TouchDesigner, Pure Data, etc.), send messages to `IP:Port` with appropriate addresses.
 
-*Creating mappings*
+### Creating mappings
 
 There are two main ways to create mappings:
-1. from the panel (manual)
+1. **From the panel (manual)**
     - Shape Key Mappings:
-        - Click "Add Shape Key Mapping" or "Add 50 Face Shape Key Mappings" (if you for example a character with the 52 AR-Kit blendshapes already setup in Blender)
+        - Click "**Add Shape Key Mapping**" or "**Add 50 Face Shape Key Mappings**" (e.g. if you have a character with the 52 AR-Kit blendshapes already setup in Blender)
         - Set `address`, `object_name` and `shapekey_name`.
     - Generic Property Mappings:
-        - Click "Add Generic Mapping".
+        - Click "**Add Generic Mapping**".
         - Set `address` and `data_path` (e.G. `bpy.data.objects['Cube'].location[0]` to control the X location of the default cube).
-2. From a right-clik on any property
+2. **From a right-clik on any property**
     - Right-click on a property on any Blender panel.
-    - Choose "Create OSC Mapping" from the context menu.
+    - Choose "**Create OSC Mapping**" from the context menu.
     - A new "Generic Property Mapping entry is automatically created with:
         - A generated OSC address (based on object and property).
         - A valid `data_path` pointing to that property.
@@ -85,13 +85,13 @@ This add-on bundles the following third-party library:
 
 - python-osc
     - Pure Python OSC server/clinet implementation.
-    - Distributed under the Unlicense (public domain / "do what you want" license).
+    - Distributed under the **Unlicense** (public domain / "do what you want" license).
     - The original license file is included under `vendors/pythonosc/`.
 
 The add-on code itself is licensed under the GNU GPL, version 3 or later (see below).
 
 ## License
-- The add-on is licensed under the GNU General Public License v3.0 or later (GPL-3.0-or-later).
+- The add-on is licensed under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**.
 - See the `LICENSE` file at the root of the repository for the full terms.
 
 This complies with Blender's requirement that Python add-ons using `bpy` API be GPL-compatible.
