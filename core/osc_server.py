@@ -21,25 +21,16 @@ import sys
 import threading
 import queue
 import time
-from pathlib import Path
 from typing import Dict, Optional, List, Tuple
 
 # ------------------------------------------------------------------------------------------------------
 # Python-OSC import (bundled vendor package)
 # ------------------------------------------------------------------------------------------------------
 
-# Path to the local "vendors" directory that contains the bundled python-osc
-VENDOR_DIR = Path(__file__).parent.parent / "vendors"
-
-# Make sure the vendors directory is visible by the Python interpreter
-if str(VENDOR_DIR) not in sys.path:
-    # Insert at the begining so it has priority over any system-installed version
-    sys.path.insert(0, str(VENDOR_DIR))
-
 # External dependency: bundled python-osc (see vendors/pythonosc)
 try:
-    from pythonosc.dispatcher import Dispatcher
-    from pythonosc.osc_server import ThreadingOSCUDPServer
+    from ..vendors.pythonosc.dispatcher import Dispatcher
+    from ..vendors.pythonosc.osc_server import ThreadingOSCUDPServer
 except ImportError:
     # If this happens, the vendors/pythonosc folder is probably missing or corrupted
     Dispatcher = None
