@@ -1,0 +1,8 @@
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore python-osc tests & cache (we only need the library itself)
+vendors/pythonosc/__pycache__/
+vendors/pythonosc/test/
