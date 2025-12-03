@@ -85,6 +85,16 @@ class OSC_OT_CreateMappingFromProperty(bpy.types.Operator):
             # Initialize default in/out ranges based on the property metadata
             self.set_default_ranges(item, button_prop)
             
+            # Force UI refresh so the new mapping appears immediately in the N-panel
+            wm = bpy.context.window_manager
+            for window in wm.windows:
+                screen = window.screen
+                for area in screen.areas:
+                    if area.type == 'VIEW_3D':
+                        for region in area.regions:
+                            if region.type == 'UI':
+                                region.tag_redraw()
+
             self.report({'INFO'}, f"Mapping OSC created: {osc_address} -> {full_path}")
             return {'FINISHED'}
             
@@ -228,21 +238,20 @@ class OSC_OT_CreateMappingFromProperty(bpy.types.Operator):
     
     def set_default_ranges(self, item, prop):
         """
-        Initialize min_out / max_out for a new mapping item based on
-        the Blender property's metadata.
+        Define default output ranges for a new mapping item.
 
-        - If soft_min/soft_max exist, use them (typical for floats).
-        - If the property is a boolean, map [0, 1] to off/on.
+        - Boolean properties are always mapped to [0.0, 1.0].
+        - All other properties default to [0.0, 1.0] as a safe and predictable range.
         """
-        if hasattr(prop, 'soft_min') and hasattr(prop, 'soft_max'):
-            item.min_out = prop.soft_min
-            item.max_out = prop.soft_max
+        # Boolean: map 0..1 to false/true
+        if hasattr(prop, "default") and isinstance(prop.default, bool):
+            item.min_out = 0.0
+            item.max_out = 1.0
+            return
 
-        elif hasattr(prop, 'default'):
-            # Simple convention for boolean toggles
-            if isinstance(prop.default, bool):
-                item.min_out = 0.0
-                item.max_out = 1.0
+        # Fallback for everything else: 0..1
+        item.min_out = 0.0
+        item.max_out = 1.0
 
 
 # ------------------------------------------------------------------------
