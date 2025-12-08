@@ -18,6 +18,7 @@ Management of the OSC (threaded) server used by the add-on:
 
 import bpy
 import sys
+import os
 import threading
 import queue
 import time
@@ -27,14 +28,22 @@ from typing import Dict, Optional, List, Tuple
 # Python-OSC import (bundled vendor package)
 # ------------------------------------------------------------------------------------------------------
 
-# External dependency: bundled python-osc (see vendors/pythonosc)
+# Compute the absolute path to the "vendors" directory inside this add-on
+ADDON_ROOT = os.path.dirname(os.path.dirname(__file__))  # parent of "core"
+VENDOR_DIR = os.path.join(ADDON_ROOT, "vendors")
+
+if VENDOR_DIR not in sys.path:
+    sys.path.insert(0, VENDOR_DIR)
+
 try:
-    from ..vendors.pythonosc.dispatcher import Dispatcher
-    from ..vendors.pythonosc.osc_server import ThreadingOSCUDPServer
-except ImportError:
-    # If this happens, the vendors/pythonosc folder is probably missing or corrupted
+    # Import from the bundled python-osc copied into vendors/pythonosc
+    from pythonosc.dispatcher import Dispatcher
+    from pythonosc.osc_server import ThreadingOSCUDPServer
+except Exception as e:
+    print("python-osc import error:", e)
     Dispatcher = None
     ThreadingOSCUDPServer = None
+
 
 # ------------------------------------------------------------------------------------------------------
 # Internal imports: mapping and data application utilities
