@@ -84,7 +84,7 @@ This is useful for recording live performance driven by OSC directly into Blende
 This add-on bundles the following third-party library:
 
 - python-osc
-    - Pure Python OSC server/clinet implementation.
+    - Pure Python OSC server/client implementation.
     - Distributed under the **Unlicense** (public domain / "do what you want" license).
     - The original license file is included under `vendors/pythonosc/`.
 
