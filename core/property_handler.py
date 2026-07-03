@@ -47,7 +47,14 @@ def apply_generic_value(data_path: str, value: float) -> bool:
         # For safety, only allow paths that explicitly start with 'bpy.'
         if not data_path.startswith('bpy.'):
             return False
-        
+
+        # Normalize quotes: downstream parsing (split/regex) assumes single
+        # quotes, but Blender's own "Copy Data Path" produces double quotes
+        # (e.g. objects["Plane"]). Without this, exec() still succeeds but
+        # the update_tag()/autokey extraction below throws IndexError,
+        # silently skipping the depsgraph refresh (viewport stays stale).
+        data_path = data_path.replace('"', "'")
+
         # ----------------------------------------------------------------------------------------------
         # Special case: timeline frame control (frame_current)
         # ----------------------------------------------------------------------------------------------
@@ -107,7 +114,7 @@ def apply_generic_value(data_path: str, value: float) -> bool:
         ):
             try:
                 # Direct assignment using the data_path expression
-                exec(f"{data_path} = {value}")
+                exec(f"{data_path} = {repr(value)}")
                 
                 # Auto-keying for shader nodes if enabled
                 if bpy.context.scene.osc_autokey:
@@ -185,7 +192,7 @@ def apply_generic_value(data_path: str, value: float) -> bool:
         ):
             try:
                 # Direct assignment on the node group input
-                exec(f"{data_path} = {value}")
+                exec(f"{data_path} = {repr(value)}")
                 
                 # Auto-keying for node group sockets
                 if bpy.context.scene.osc_autokey:
@@ -252,10 +259,10 @@ def apply_generic_value(data_path: str, value: float) -> bool:
         #   bpy.data.objects['Camera'].data.lens
         #   bpy.data.cameras['Camera'].lens
         # ----------------------------------------------------------------------------------------------
-        if 'bpy.data.' in data_path:
+        if 'bpy.data.' in data_path and not ('.modifiers[' in data_path and '][' in data_path):
             try:
                 # Direct assignment on any bpy.data.* path
-                exec(f"{data_path} = {value}")
+                exec(f"{data_path} = {repr(value)}")
                 
                 if bpy.context.scene.osc_autokey:
                     try:
@@ -399,12 +406,24 @@ def apply_generic_value(data_path: str, value: float) -> bool:
                             new_value = bool(value > 0.5)
                         elif isinstance(current_value, int):
                             new_value = int(round(value))
+                        elif isinstance(current_value, str):
+                            new_value = str(value)
                         else:
                             new_value = float(value)
                         
                         # Apply value
                         modifier[socket_name] = new_value
-                        
+                        obj.update_tag()
+
+                        # String inputs don't mark geometry dirty via view_layer.update().
+                        # Schedule frame_set in a separate timer tick to avoid deadlock.
+                        if isinstance(new_value, str):
+                            def _force_geonodes_update():
+                                if not bpy.context.screen.is_animation_playing:
+                                    bpy.context.scene.frame_set(bpy.context.scene.frame_current)
+                                return None
+                            bpy.app.timers.register(_force_geonodes_update, first_interval=0.0)
+
                         # Auto-keying for modifiers
                         if bpy.context.scene.osc_autokey:
                             current_frame = bpy.context.scene.frame_current

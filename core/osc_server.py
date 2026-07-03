@@ -270,6 +270,9 @@ def osc_timer_step_extended() -> Optional[float]:
             if isinstance(a, (float, int)):
                 value = float(a)
                 break
+            elif isinstance(a, str):
+                value = a
+                break
 
         if value is not None and address in table:
             # Import here to avoid circular imports at module level
@@ -277,7 +280,8 @@ def osc_timer_step_extended() -> Optional[float]:
 
             # For each mapping registered on this OSC address
             for m in table[address]:
-                v = m.map_value(value)
+                # Bypass numeric remapping for string values
+                v = value if isinstance(value, str) else m.map_value(value)
                 
                 if isinstance(m, OSCMapping):
                     # Shape key mapping

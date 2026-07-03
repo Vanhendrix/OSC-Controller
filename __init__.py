@@ -21,17 +21,23 @@ bl_info = {
     "category": "Animation",
 }
 
-import bpy
+_needs_reload = "bpy" in locals()
 
-# Import top-level sub-packages of the add-on
-from . import properties
-from . import operators
-from . import ui
+import bpy
+from . import properties, operators, ui, core, utils
+
+if _needs_reload:
+    import importlib
+    properties = importlib.reload(properties)
+    operators = importlib.reload(operators)
+    ui = importlib.reload(ui)
+    core = importlib.reload(core)
+    utils = importlib.reload(utils)
 
 # Ordered list of modules that expose register()/unregister()
 modules = [
     properties,
-    operators, 
+    operators,
     ui,
 ]
 
