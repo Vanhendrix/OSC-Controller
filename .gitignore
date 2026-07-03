@@ -6,3 +6,5 @@ __pycache__/
 # Ignore python-osc tests & cache (we only need the library itself)
 vendors/pythonosc/__pycache__/
 vendors/pythonosc/test/
+# Vault-internal project note, not addon source
+OSC-Controller.md
