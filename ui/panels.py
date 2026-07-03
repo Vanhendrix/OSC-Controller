@@ -118,7 +118,9 @@ class OSC_PT_Panel_Extended(bpy.types.Panel):
                 row = range_col.row(align=True)
                 row.prop(item, "clamp"); row.prop(item, "invert")
 
-                box.prop(item, "remap_enabled")
+                remap_row = box.row()
+                remap_row.enabled = scn.osc_remap_enabled
+                remap_row.prop(item, "remap_enabled")
 
         # Button to add a new empty mapping row
         layout.operator("osc_mapping.add", text="Add Shape Key Mapping", icon="ADD")
@@ -176,7 +178,9 @@ class OSC_PT_Panel_Extended(bpy.types.Panel):
                 row = range_col.row(align=True)
                 row.prop(item, "clamp"); row.prop(item, "invert")
 
-                box.prop(item, "remap_enabled")
+                remap_row = box.row()
+                remap_row.enabled = scn.osc_remap_enabled
+                remap_row.prop(item, "remap_enabled")
 
         # Button to add a new generic mapping row
         layout.operator("osc_mapping.add_generic", text="Add Generic Mapping", icon="ADD")
