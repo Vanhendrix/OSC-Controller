@@ -199,6 +199,14 @@ class OSC_OT_CreateMappingFromProperty(bpy.types.Operator):
         if hasattr(obj_id, 'name'):
             obj_name = obj_id.name
 
+            # Scene-level PropertyGroup (e.g. custom PointerProperty on Scene).
+            # Scene has neither 'users_scene' nor 'type', so it must be checked
+            # explicitly before the generic branches below, otherwise it falls
+            # through to the bpy.context.object fallback (wrong: context.object
+            # is the active viewport selection, not the Scene, and is often None).
+            if isinstance(obj_id, bpy.types.Scene):
+                return f"bpy.data.scenes['{obj_name}'].{data_path}"
+
             # If this datablock is used in a scene, we can reference it as an object
             if hasattr(obj_id, 'users_scene') and obj_id.users_scene:
                 return f"bpy.data.objects['{obj_name}'].{data_path}"
@@ -299,7 +307,7 @@ class OSC_OT_DuplicateGenericMapping(bpy.types.Operator):
             dst = scn.osc_generic_mappings.add()
 
             # Copy every annotated property from source to destination            
-            for attr in src.__annotations__.keys():
+            for attr in type(src).__annotations__.keys():
                 setattr(dst, attr, getattr(src, attr))
             
             # Ensure the duplicated mapping is visible (unfolded)
@@ -439,7 +447,7 @@ class OSC_OT_DuplicateMapping(bpy.types.Operator):
             dst = scn.osc_mappings.add()
 
             # Copy field by field using annotations as the source of truth
-            for attr in src.__annotations__.keys():
+            for attr in type(src).__annotations__.keys():
                 setattr(dst, attr, getattr(src, attr))
 
             # Make the duplicated mapping unfolded for editing

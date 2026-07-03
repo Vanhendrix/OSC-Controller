@@ -55,11 +55,16 @@ class GenericOSCMapping:
     max_out: float = 1.0
     clamp: bool = True
     invert: bool = False
-    
+    # False = raw passthrough (skips normalize/clamp/invert entirely) — set
+    # by build_mapping_table_extended() from Scene.osc_remap_enabled AND
+    # this item's own remap_enabled.
+    remap_enabled: bool = True
+
     def map_value(self, v: float) -> float:
         """
         Map an incoming OSC value from [min_in, max_in] into [min_out, max_out],
-        with optional clamping and inversion.
+        with optional clamping and inversion. If remap_enabled is False,
+        returns v unchanged (the source already sends a pre-mapped value).
 
         Args:
             v: Raw OSC numeric value.
@@ -67,6 +72,9 @@ class GenericOSCMapping:
         Returns:
             The mapped float value to be applied to the Blender property.
         """
+        if not self.remap_enabled:
+            return v
+
         # Normalize input into [0, 1]
         if self.max_in != self.min_in:
             t = (v - self.min_in) / (self.max_in - self.min_in)
@@ -134,11 +142,14 @@ class OSCMapping:
     max_out: float = 1.0
     clamp: bool = True
     invert: bool = False
+    # False = raw passthrough — see GenericOSCMapping.remap_enabled.
+    remap_enabled: bool = True
 
     def map_value(self, v: float) -> float:
         """
         Map an incoming OSC value from [min_in, max_in] into [min_out, max_out],
         with optional clamping and inversion, exactly like GenericOSCMapping.
+        If remap_enabled is False, returns v unchanged.
 
         Args:
             v: Raw OSC numeric value.
@@ -146,6 +157,9 @@ class OSCMapping:
         Returns:
             The mapped float value to be applied to the shape key or bone.
         """
+        if not self.remap_enabled:
+            return v
+
         # Normalize input into [0, 1]
         if self.max_in != self.min_in:
             t = (v - self.min_in) / (self.max_in - self.min_in)
@@ -187,7 +201,11 @@ def build_mapping_table_extended(ctx) -> Dict[str, List]:
             OSC address (str) -> list of OSCMapping or GenericOSCMapping.
     """
     table: Dict[str, List] = {}
-    
+
+    # Global switch forces every mapping to passthrough regardless of its
+    # own remap_enabled — checked once here rather than per-item.
+    global_remap = bool(getattr(ctx.scene, "osc_remap_enabled", True))
+
     # --------------------------------------------------------------------------------------------------
     # Existing mappings: shape keys and bones
     # --------------------------------------------------------------------------------------------------
@@ -206,11 +224,12 @@ def build_mapping_table_extended(ctx) -> Dict[str, List]:
             max_out=item.max_out,
             clamp=bool(item.clamp),
             invert=bool(item.invert),
+            remap_enabled=global_remap and bool(getattr(item, "remap_enabled", True)),
         )
 
          # Group mappings by OSC address
         table.setdefault(m.address, []).append(m)
-    
+
     # --------------------------------------------------------------------------------------------------
     # New generic mappings (any data path)
     # --------------------------------------------------------------------------------------------------
@@ -224,6 +243,7 @@ def build_mapping_table_extended(ctx) -> Dict[str, List]:
             max_out=item.max_out,
             clamp=bool(item.clamp),
             invert=bool(item.invert),
+            remap_enabled=global_remap and bool(getattr(item, "remap_enabled", True)),
         )
 
         # Group mappings by OSC address

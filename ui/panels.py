@@ -21,6 +21,7 @@ Defines the main OSC UI panel in the 3D View (N-panel):
 import bpy
 
 from ..core.osc_server import osc_state
+from ..core import presets
 
 
 class OSC_PT_Panel_Extended(bpy.types.Panel):
@@ -52,6 +53,7 @@ class OSC_PT_Panel_Extended(bpy.types.Panel):
         col.prop(scn, "osc_ip")
         col.prop(scn, "osc_port")
         col.prop(scn, "osc_autokey")
+        col.prop(scn, "osc_remap_enabled")
 
         row = col.row(align=True)
         if osc_state.running:
@@ -79,10 +81,16 @@ class OSC_PT_Panel_Extended(bpy.types.Panel):
             op = header.operator("osc_mapping.toggle_fold", text="", icon=icon, emboss=False)
             op.index = i
 
+            header.prop(item, "selected", text="")
+
+            remap_active = scn.osc_remap_enabled and item.remap_enabled
+
             # Display OSC address, object name and shape key name as quick overview
             header.label(text=item.address if item.address else "/param")
             header.label(text=item.object_name if item.object_name else "(Object)")
             header.label(text=item.shapekey_name if item.shapekey_name else "(ShapeKey)")
+            if not remap_active:
+                header.label(text="(raw)")
 
             # Duplicate and remove buttons
             header.operator("osc_mapping.duplicate", text="", icon="DUPLICATE").index = i
@@ -98,20 +106,26 @@ class OSC_PT_Panel_Extended(bpy.types.Panel):
                 box.prop(item, "rotation_axis")
                 box.prop(item, "rotation_mode")
 
-                row = box.row(align=True)
+                range_col = box.column(align=True)
+                range_col.enabled = remap_active
+
+                row = range_col.row(align=True)
                 row.prop(item, "min_in"); row.prop(item, "max_in")
 
-                row = box.row(align=True)
+                row = range_col.row(align=True)
                 row.prop(item, "min_out"); row.prop(item, "max_out")
 
-                row = box.row(align=True)
+                row = range_col.row(align=True)
                 row.prop(item, "clamp"); row.prop(item, "invert")
+
+                box.prop(item, "remap_enabled")
 
         # Button to add a new empty mapping row
         layout.operator("osc_mapping.add", text="Add Shape Key Mapping", icon="ADD")
 
-        # Convenience button to create a full set of facial shape key mappings
-        layout.operator("osc_mapping.add_bulk", text="Ajouter 50 mappings ShapeKeys", icon="PLUS")
+        # Convenience button to create a full set of facial shape key mappings —
+        # the de-facto ARKit 52 preset (save it via the Presets section below).
+        layout.operator("osc_mapping.add_bulk", text="Add ARKit 52 Shape Keys", icon="PLUS")
         
         layout.separator()
         
@@ -130,10 +144,16 @@ class OSC_PT_Panel_Extended(bpy.types.Panel):
             op = header.operator("osc_mapping.toggle_generic_fold", text="", icon=icon, emboss=False)
             op.index = i
 
+            header.prop(item, "selected", text="")
+
+            remap_active = scn.osc_remap_enabled and item.remap_enabled
+
             # Show OSC address and a short form of the data_path
             header.label(text=item.address if item.address else "/param")
             short_path = item.data_path.split('.')[-1] if item.data_path else "(Property)"
             header.label(text=short_path)
+            if not remap_active:
+                header.label(text="(raw)")
 
             # Duplicate and remove actions
             header.operator("osc_mapping.duplicate_generic", text="", icon="DUPLICATE").index = i
@@ -144,18 +164,52 @@ class OSC_PT_Panel_Extended(bpy.types.Panel):
                 box.prop(item, "address")
                 box.prop(item, "data_path")
 
-                row = box.row(align=True)
+                range_col = box.column(align=True)
+                range_col.enabled = remap_active
+
+                row = range_col.row(align=True)
                 row.prop(item, "min_in"); row.prop(item, "max_in")
 
-                row = box.row(align=True)
+                row = range_col.row(align=True)
                 row.prop(item, "min_out"); row.prop(item, "max_out")
 
-                row = box.row(align=True)
+                row = range_col.row(align=True)
                 row.prop(item, "clamp"); row.prop(item, "invert")
+
+                box.prop(item, "remap_enabled")
 
         # Button to add a new generic mapping row
         layout.operator("osc_mapping.add_generic", text="Add Generic Mapping", icon="ADD")
-        
+
+        layout.separator()
+
+        # --------------------------------------------------------------
+        # Section: Presets
+        # --------------------------------------------------------------
+        layout.label(text="Presets", icon="PRESET")
+        preset_box = layout.box()
+
+        row = preset_box.row(align=True)
+        row.operator("osc_mapping.save_preset", text="Save All").selected_only = False
+        row.operator("osc_mapping.save_preset", text="Save Selected").selected_only = True
+        preset_box.operator("osc_mapping.clear_all_mappings", text="Clear All Mappings", icon="TRASH")
+
+        preset_box.separator()
+        preset_names = presets.list_presets()
+        if not preset_names:
+            preset_box.label(text="No saved presets yet")
+        else:
+            for name in preset_names:
+                prow = preset_box.row(align=True)
+                prow.label(text=name)
+                prow.operator("osc_mapping.load_preset", text="", icon="IMPORT").preset_name = name
+                prow.operator("osc_mapping.delete_preset", text="", icon="X").preset_name = name
+
+        preset_box.separator()
+        preset_box.label(text="Camera Preset", icon="CAMERA_DATA")
+        preset_box.prop(scn, "osc_camera_preset_target")
+        preset_box.operator("osc_mapping.create_camera_mappings", text="Create Camera Mappings")
+
         # --------------------------------------------------------------
         # Help / Tip box about right-click mapping
         # --------------------------------------------------------------

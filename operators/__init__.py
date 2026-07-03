@@ -20,9 +20,10 @@ used by the main add-on __init__.py.
 # Import all operator submodules
 from . import osc_server
 from . import mapping_operators
+from . import preset_operators
 
 # List of operator modules that expose their own register()/unregister()
-modules = [osc_server, mapping_operators]
+modules = [osc_server, mapping_operators, preset_operators]
 
 
 def register():

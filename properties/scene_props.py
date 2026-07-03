@@ -57,6 +57,15 @@ class GenericOSCMappingItem(bpy.types.PropertyGroup):
     # Invert the normalized value (1 - t)
     invert: bpy.props.BoolProperty(name="Invert", default=False)
 
+    # When off, map_value() returns the raw OSC value unchanged (skips
+    # normalize/clamp/invert) — for sources that already send pre-mapped
+    # values. Overridden by Scene.osc_remap_enabled when that's off too.
+    remap_enabled: bpy.props.BoolProperty(name="Remap", default=True)
+
+    # UI state: checkbox for "include in group" when saving a preset
+    # from a selection rather than all mappings.
+    selected: bpy.props.BoolProperty(name="Select", default=False)
+
     # UI state: whether this mapping row is folded/collapsed
     fold: bpy.props.BoolProperty(name="Fold", default=False)
 
@@ -110,6 +119,15 @@ class OSCMappingItem(bpy.types.PropertyGroup):
     # Invert normalized value (1 - t)
     invert: bpy.props.BoolProperty(name="Invert", default=False)
 
+    # When off, map_value() returns the raw OSC value unchanged (skips
+    # normalize/clamp/invert) — for sources that already send pre-mapped
+    # values. Overridden by Scene.osc_remap_enabled when that's off too.
+    remap_enabled: bpy.props.BoolProperty(name="Remap", default=True)
+
+    # UI state: checkbox for "include in group" when saving a preset
+    # from a selection rather than all mappings.
+    selected: bpy.props.BoolProperty(name="Select", default=False)
+
     # UI state: whether this mapping row is folded/collapsed
     fold: bpy.props.BoolProperty(name="Fold", default=False)
 
@@ -148,6 +166,16 @@ def register():
     # Global toggle for automatic keyframing from OSC changes
     scn.osc_autokey = bpy.props.BoolProperty(name="Auto Key", default=False)
 
+    # Global remap switch — off forces every mapping to passthrough its
+    # raw OSC value, regardless of each mapping's own remap_enabled.
+    scn.osc_remap_enabled = bpy.props.BoolProperty(name="Enable Remap", default=True)
+
+    # Camera object picker used by the "Create Camera Mappings" preset
+    # generator (operators/preset_operators.py::OSC_OT_CreateCameraMappings).
+    scn.osc_camera_preset_target = bpy.props.PointerProperty(
+        name="Camera", type=bpy.types.Object, poll=lambda self, obj: obj.type == 'CAMERA'
+    )
+
     # Collections that store mappings in the Scene
     scn.osc_mappings = bpy.props.CollectionProperty(type=OSCMappingItem)
     scn.osc_generic_mappings = bpy.props.CollectionProperty(type=GenericOSCMappingItem)
@@ -160,7 +188,10 @@ def unregister():
     """
     # Remove Scene-level properties defined in register()
     scn = bpy.types.Scene
-    attrs = ['osc_ip', 'osc_port', 'osc_autokey', 'osc_mappings', 'osc_generic_mappings']
+    attrs = [
+        'osc_ip', 'osc_port', 'osc_autokey', 'osc_remap_enabled', 'osc_camera_preset_target',
+        'osc_mappings', 'osc_generic_mappings',
+    ]
 
     for attr in attrs:
         if hasattr(scn, attr):
